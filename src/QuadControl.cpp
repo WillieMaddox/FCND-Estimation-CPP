@@ -230,7 +230,11 @@ float QuadControl::AltitudeControl(float posZCmd, float velZCmd, float posZ, flo
 //  thrust = -(desAccel / R(2, 2) * mass);
 
   //////////////////////////////// END SOLUTION ///////////////////////////////
-  
+
+  // reserve some thrust margin for angle control
+  float thrustMargin = .1f*(maxMotorThrust - minMotorThrust);
+  thrust = CONSTRAIN(thrust, (minMotorThrust + thrustMargin) * 4.f, (maxMotorThrust - thrustMargin) * 4.f);
+
   return thrust;
 }
 
@@ -354,10 +358,6 @@ VehicleCommand QuadControl::RunControl(float dt, float simTime)
 
   float collThrustCmd = AltitudeControl(curTrajPoint.position.z, curTrajPoint.velocity.z, estPos.z, estVel.z, estAtt, curTrajPoint.accel.z, dt);
 
-  // reserve some thrust margin for angle control
-  float thrustMargin = .1f*(maxMotorThrust - minMotorThrust);
-  collThrustCmd = CONSTRAIN(collThrustCmd, (minMotorThrust+ thrustMargin)*4.f, (maxMotorThrust-thrustMargin)*4.f);
-  
   V3F desAcc = LateralPositionControl(curTrajPoint.position, curTrajPoint.velocity, estPos, estVel, curTrajPoint.accel);
   
   V3F desOmega = RollPitchControl(desAcc, estAtt, collThrustCmd);
